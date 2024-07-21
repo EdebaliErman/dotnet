@@ -41,6 +41,30 @@ namespace ProductApi.Controllers
             }
             return Ok(p);
         }
-
+         
+         //* POST http://localhost:7198/api/product => POST İsteği
+        [HttpPost]
+        public async Task<IActionResult> AddProduct(Product entity)
+        {
+            _context.Products.Add(entity);
+            await _context.SaveChangesAsync();
+            return CreatedAtAction(nameof(GetProductId), new { id = entity.ProductId }, entity);
+        }
+        [HttpPut("{id}")]
+        public async Task<IActionResult> UpdateProduct(int? id, Product entity)
+        {
+            if (id == null)
+            {
+                return NotFound();
+            }
+            if (id != entity.ProductId)
+            {
+                return BadRequest();
+            }
+            _context.Entry(entity).State = EntityState.Modified;
+            await _context.SaveChangesAsync();
+            return NoContent();
+        }
+       
     }
 }
