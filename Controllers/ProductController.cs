@@ -21,7 +21,7 @@ namespace ProductApi.Controllers
         public async Task<IActionResult> GetProducts() //productları liste halinde döndük
         {
             var products = await _context.Products.ToListAsync();
-         
+
             return Ok(products);
         }
 
@@ -41,8 +41,8 @@ namespace ProductApi.Controllers
             }
             return Ok(p);
         }
-         
-         //* POST http://localhost:7198/api/product => POST İsteği
+
+        //* POST http://localhost:7198/api/product => POST İsteği
         [HttpPost]
         public async Task<IActionResult> AddProduct(Product entity)
         {
@@ -50,21 +50,41 @@ namespace ProductApi.Controllers
             await _context.SaveChangesAsync();
             return CreatedAtAction(nameof(GetProductId), new { id = entity.ProductId }, entity);
         }
+
+        //* PUT http://localhost:7198/api/product/1 => PUT İsteği
         [HttpPut("{id}")]
         public async Task<IActionResult> UpdateProduct(int? id, Product entity)
         {
+            //* id parametresi null olamaz
             if (id == null)
             {
                 return NotFound();
             }
+
+            var p = await _context.Products.FirstOrDefaultAsync(x => x.ProductId == id);
+
+            //* id ile eşleşen Ürün yok
             if (id != entity.ProductId)
             {
                 return BadRequest();
             }
-            _context.Entry(entity).State = EntityState.Modified;
-            await _context.SaveChangesAsync();
+            //* eşleşen ürün bulundu
+            p.ProductId = entity.ProductId;
+            p.ProductName = entity.ProductName;
+            p.ProductPrice = entity.ProductPrice;
+            p.ProductStatus = entity.ProductStatus;
+
+            try
+            {
+                await _context.SaveChangesAsync();
+            }
+            catch (Exception e)
+            {
+                return NotFound();
+            }
+
             return NoContent();
         }
-       
+
     }
 }
